@@ -1,40 +1,11 @@
 import customtkinter as ctk
-import nest_asyncio
 import threading
-nest_asyncio.apply()
 import asyncio
 from scripts.save_mac import * 
 
-# class App(ctk.CTk):
+# List for MAC labels
+labels = []
 
-#     def __init__(self, loop, interval=1/120):
-#         super().__init__()
-#         self.loop = loop
-#         self.protocol("WM_DELETE_WINDOW", self.close)
-#         self.tasks = []
-#         self.tasks.append(loop.create_task(self.rotator(1/60, 2)))
-#         self.tasks.append(loop.create_task(self.updater(interval)))
-
-#     async def rotator(self, interval, d_per_tick):
-#         self._set_appearance_mode("dark")
-#         canvas = ctk.CTkCanvas(self, height=600, width=600)
-#         canvas.pack()
-#         deg = 0
-#         color = 'black'
-#         while await asyncio.sleep(interval, True):
-#             canvas.itemconfigure(extent=deg, fill=color)
-
-#     async def updater(self, interval):
-#         while True:
-#             self.update()
-#             await asyncio.sleep(interval)
-        
-#     def close(self):
-#         for task in self.tasks:
-#             task.cancel()
-#         self.loop.stop()
-#         self.destroy()
-    
 # Configuration for main window 
 def main(async_loop):
     main_window = ctk.CTk()
@@ -43,86 +14,102 @@ def main(async_loop):
     main_window.geometry("600x500") 
     main_window.configure(fg_color="#433A3A")
     main_window.resizable(False, False)
-
-    # Variables
     
-
     # Text Varibles
     macs_frame = ctk.StringVar()
     products_number = ctk.StringVar()
     boxes_number = ctk.StringVar()
+    total_macs = ctk.StringVar()
 
     # Frames
-    mac_frame = ctk.CTkFrame(main_window, width= 560, height= 300, fg_color="#B37B0C", corner_radius=15)
-    mac_frame.place(x=20, y=20)
+    mac_frame = ctk.CTkFrame(main_window, width= 300, height= 300, fg_color="#003F58", corner_radius=15)
+    mac_frame.place(x=130, y=60)
+    mac_frame.propagate(False)
     
     # Fixed Label's
-    mac_label = ctk.CTkLabel(main_window, text="Insira o MAC")
-    mac_label.place(x=20, y=320)
-
-    mac_label_frame = ctk.CTkLabel(mac_frame, text="MAC's", font=("Roboto", 24))
+    mac_label_frame = ctk.CTkLabel(main_window, text="MAC's", font=("Roboto", 24))
     mac_label_frame.place(x=240, y=20)
 
-    boxes_label_frame = ctk.CTkLabel(mac_frame, text="CAIXA(S):", font=("Roboto", 24))
+    boxes_label_frame = ctk.CTkLabel(main_window, text="CAIXA(S):", font=("Roboto", 24))
     boxes_label_frame.place(x=20, y=20)
 
-    products_label_frame = ctk.CTkLabel(mac_frame, text="Produto(s):", font=("Roboto", 24))
+    products_label_frame = ctk.CTkLabel(main_window, text="Produto(s):", font=("Roboto", 24))
     products_label_frame.place(x=380, y=20)
 
     # Output Label's
-
-    mac_response_frame = ctk.CTkLabel(mac_frame, textvariable=macs_frame, font=("Roboto", 18))
-    mac_response_frame.place(x=20, y=50)
+    mac_response_frame = ctk.CTkLabel(main_window, textvariable=macs_frame, font=("Roboto", 18), anchor="center")
+    mac_response_frame.place(x=140, y=400)
     
-    boxes_response_frame = ctk.CTkLabel(mac_frame, textvariable=boxes_number, font=("Roboto", 24))
+    boxes_response_frame = ctk.CTkLabel(main_window, textvariable=boxes_number, font=("Roboto", 24))
     boxes_response_frame.place(x=40, y=20)
 
-    products_response_frame = ctk.CTkLabel(mac_frame, textvariable=products_number, font=("Roboto", 24))
+    products_response_frame = ctk.CTkLabel(main_window, textvariable=products_number, font=("Roboto", 24))
     products_response_frame.place(x=510, y=20)
 
     # Info Entrys
-    mac_entry = ctk.CTkEntry(main_window, placeholder_text="mac")
-    mac_entry.place(x=20, y=360)
+    mac_entry = ctk.CTkEntry(main_window, placeholder_text="INSIRA O MAC")
+    mac_entry.place(x=210, y=365)
 
-    # Window Buttons 
-    button = ctk.CTkButton(main_window, text="")
-    button.place(x=20,y=400)
-    print(mac_quantity())
-    products_number.set(mac_quantity())
-    threading.Thread(target=start_async_loop, args=[mac_entry, macs_frame, boxes_number, products_number]).start()
+    # Program Init
+    for i in range(10):
+        lbl = ctk.CTkLabel(mac_frame, text=i)
+        lbl.pack(pady=0, padx=0)
+        labels.append(lbl)
+    #print(labels)
+    if mac_quantity() == None:
+        is_first_mac = True
+        products_number.set("0")
+        pass
+    else:
+        is_first_mac = False
+        write_10_macs(mac_frame)
+        products_number.set(mac_quantity())
+    threading.Thread(target=start_async_loop, args=[mac_entry, macs_frame, boxes_number, products_number, is_first_mac, mac_frame]).start()
     main_window.mainloop()
 
 # Functions
 
-def is_first_mac(mac_counter):
-    return True if mac_counter == 0 else False
+def write_10_macs(mac_frame):
+    items = write_mac()
+    for i in range(len(items)):
+        labels[i].configure(text=items[i])
+    # for item in items:
+    #     ctk.CTkLabel(mac_frame, text=item.upper()).pack(pady=0, padx=0)
 
-async def search_mac(mac_entry, macs_frame, boxes_number, products_number):
+# Async function to search mac entry in X seconds
+async def search_mac(mac_entry, macs_frame, boxes_number, products_number, is_first_mac, mac_frame):
     while True:
         try:
-            mac_counter = int(products_number.get())
-            print(mac_entry.get())
+            # Get the mac entry
             mac = mac_entry.get()
-            first_mac = is_first_mac(mac_counter)
-            response = write_mac(mac)
-            if response == "OK":
-                first_mac == False
-                mac_counter += 1
-                products_number.set(str(mac_counter))
-                macs_frame.set(mac)
-            else:
-                mac_entry.set("")
-            macs_frame.set(mac)
-            print(response)
-            await asyncio.sleep(2)
+            # Checks if mac entry have some text
+            if mac:
+                #print("MAC LIDO")
+                # Tries to save the mac on the txt mac file
+                response = save_mac(mac, is_first_mac)
+                #print(response)
+                # Ckecks if the MAC was written and returned "OK"
+                if response == "OK":
+                    is_first_mac = False
+                    # Update the number of products
+                    products_number.set(mac_quantity())
+                    # Add the mac to the frame and to the last 10 macs file
+                    write_10_macs(mac_frame)
+
+                else: 
+                    #print("MAC error")
+                    macs_frame.set(response)
+                await asyncio.sleep(1)
+            await asyncio.sleep(1)
         except Exception as e:
-            print("Error ", e)
+            print("Error Search Mac: ", e)
             break
 
-def start_async_loop(mac, macs_frame, boxes_number, products_number):
+# Function to start the async function search_mac
+def start_async_loop(mac, macs_frame, boxes_number, products_number, is_first_mac, mac_frame):
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
-    loop.run_until_complete(search_mac(mac, macs_frame, boxes_number, products_number))
+    loop.run_until_complete(search_mac(mac, macs_frame, boxes_number, products_number, is_first_mac, mac_frame))
 
 loop = asyncio.get_event_loop()
 main(loop)
