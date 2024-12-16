@@ -29,4 +29,3 @@ def convert_mac():
                 ':'.join(mac[i:i+2] for i in range(0, len(mac), 2)).lower()
                 #mac_formatado = formatar_mac(all_macs)
                 writer.writerow(['admin', 'admin', mac])
-convert_mac()
