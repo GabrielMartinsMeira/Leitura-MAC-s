@@ -1,0 +1,3 @@
+TOTAL_MACS:400
+USER:admin
+PASS:admin
