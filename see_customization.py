@@ -25,7 +25,7 @@ def open_window_customize(async_loop):
         window_customize.resizable(False, False)
 
         # Container para os cards
-        container = ctk.CTkFrame(window_customize, fg_color="#003F58")
+        container = ctk.CTkFrame(window_customize, fg_color="#433A3A")
         container.pack(pady=20)
         
         for i in range(10):
@@ -41,7 +41,7 @@ def open_window_customize(async_loop):
             next_entry = entries[i + 1] if i < len(entries) - 1 else None
             threading.Thread(target=start_async_loop, args=(entry, status_label, fw_label, client_label, next_entry)).start()
 
-        button_frame = ctk.CTkFrame(window_customize, fg_color="#003F58")
+        button_frame = ctk.CTkFrame(window_customize, fg_color="#433A3A")
         button_frame.pack(pady=10)
 
         # Botão para tratar os dados
