@@ -19,6 +19,7 @@ labels = []
 box_icon = ctk.CTkImage(Image.open(os.path.join(MAINPATH, "images", "box_icon.png")), size=(35, 35))
 router_icon = ctk.CTkImage(Image.open(os.path.join(MAINPATH, "images", "router_icon.png")), size=(35, 35))
 config_icon = ctk.CTkImage(Image.open(os.path.join(MAINPATH, "images", "engrenagem_icon.png")), size=(35, 35))
+eye_icon = ctk.CTkImage(Image.open(os.path.join(MAINPATH, "images", "eye_icon.png")), size=(35, 35))
 
 # The main function
 def main(async_loop):
@@ -79,8 +80,11 @@ def main(async_loop):
     open_last_txt = ctk.CTkButton(main_window, text="ABRIR ARQUIVO MACS", command=open_last_mac_file)
     open_last_txt.place(x=210, y=460)
     
-    open_config = ctk.CTkButton(main_window, text="", image=config_icon, height=10, width=20, border_width=0, fg_color="#433A3A", bg_color="#433A3A", command=open_config_window_test)
+    open_config = ctk.CTkButton(main_window, text="", image=config_icon, height=10, width=20, border_width=0, fg_color="#433A3A", bg_color="#433A3A", command=open_config_window)
     open_config.place(x=0, y=460)
+
+    open_customize = ctk.CTkButton(main_window, text="", image=eye_icon, height=10, width=20, border_width=0, fg_color="#433A3A", bg_color="#433A3A", command=open_window_customize)
+    open_customize.place(x=55, y=460)
 
     # Program Init
     # Create the labels on the frame for the last 10 macs
@@ -109,13 +113,19 @@ def main(async_loop):
     main_window.mainloop()
 
 # Functions
+# CUSTOMIZE WINDOW
+def open_window_customize():
+    from see_customization import open_window_customize
+    loop = asyncio.get_event_loop()
+    open_window_customize(loop)
+
 # CONFIG WINDOW
 def close_config_window():
     global config_window
     config_window.destroy()
     config_window = None
 
-def open_config_window_test():
+def open_config_window():
     global config_window
     if config_window is None or not config_window.winfo_exists():
         config_window = ctk.CTkToplevel(main_window)
