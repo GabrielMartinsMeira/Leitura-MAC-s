@@ -4,11 +4,13 @@ import asyncio
 import os.path
 from PIL import Image
 from time import sleep
-from scripts.save_mac import mac_quantity, clean_last_10_macs, write_last_10_macs, save_mac, get_path
-from scripts.config_screen import open_config_window, get_lenght_mac
+from scripts.save_mac import get_mac_quantity, clean_last_10_macs, write_last_10_macs, save_mac, get_path, get_lenght_mac, get_infos
 
 # Mainpath to the software, to allow work in any directory and OS
 MAINPATH = os.path.join(os.path.dirname(os.path.abspath("main.py")))
+
+# Set the config_window as None to set it closed
+config_window = None
 
 # List for MAC labels
 labels = []
@@ -30,6 +32,14 @@ def main(async_loop):
     main_window.configure(fg_color="#433A3A")
     main_window.resizable(False, False)
     
+    def open_last_mac_file():
+            path = get_path()
+            if str(path) == "Não há arquivos para abrir":
+                mac_label.set("Não há arquivos para abrir")
+            else: 
+                # Open the last txt mac file
+                os.startfile(path)
+
     # CTK Varibles
     mac_label = ctk.StringVar()
     products_number = ctk.StringVar()
@@ -69,7 +79,7 @@ def main(async_loop):
     open_last_txt = ctk.CTkButton(main_window, text="ABRIR ARQUIVO MACS", command=open_last_mac_file)
     open_last_txt.place(x=210, y=460)
     
-    open_config = ctk.CTkButton(main_window, text="", image=config_icon, height=10, width=20, border_width=0, fg_color="#433A3A", bg_color="#433A3A", command=open_config_window)
+    open_config = ctk.CTkButton(main_window, text="", image=config_icon, height=10, width=20, border_width=0, fg_color="#433A3A", bg_color="#433A3A", command=open_config_window_test)
     open_config.place(x=0, y=460)
 
     # Program Init
@@ -79,7 +89,7 @@ def main(async_loop):
         lbl.pack(pady=0, padx=0)
         labels.append(lbl)
     # Checks if there no macs written
-    if mac_quantity() == None:
+    if get_mac_quantity() == None:
         is_first_mac = True
         clean_last_10_macs()
         products_number.set("0")
@@ -92,24 +102,72 @@ def main(async_loop):
         # Writes the last 10 macs, if theres any macs
         write_10_macs(mac_frame, mac_label, lenght_mac)
         # Writes the number of products already made
-        products_number.set(mac_quantity())
+        products_number.set(get_mac_quantity())
     # Start the thread to the async loop and pass all vars
     threading.Thread(target=start_async_loop, args=[mac_entry, mac_label, boxes_number, products_number, is_first_mac, mac_frame]).start()
     main_window.protocol("WM_DELETE_WINDOW", close_window)
     main_window.mainloop()
 
 # Functions
+# CONFIG WINDOW
+def close_config_window():
+    global config_window
+    config_window.destroy()
+    config_window = None
+
+def open_config_window_test():
+    global config_window
+    if config_window is None or not config_window.winfo_exists():
+        config_window = ctk.CTkToplevel(main_window)
+
+        ctk.set_appearance_mode("dark")
+        ctk.set_default_color_theme("blue")
+        config_window.title("Configurações")
+        config_window.geometry("600x400") 
+        config_window.configure(fg_color='#433A3A')
+        config_window.resizable(False, False)
+
+        # String Var
+        lenght_mac_response = ctk.StringVar()
+
+        # Function to set the lenght written by the user,
+        def change_lenght_macs():
+            try:
+                if isinstance(int(lenght_mac_entry.get()), int) == True:
+                    lenght_mac, username, password = get_infos()
+                    lenght_mac_response.set("Largura modificada")
+                    with open(os.path.join(MAINPATH, "config", "saved_configs.txt"), "w") as writer_config_file:
+                        lenght_mac = lenght_mac_entry.get()
+                        writer_config_file.write("TOTAL_MACS:" + lenght_mac + "\nUSER:" + username + "\nPASS:" + password)
+                else:
+                    lenght_mac_response.set("Escreva um número")
+            except Exception as e:
+                lenght_mac_response.set("Entrada Invalida, escreva um número!")
+                print("Error ", e)
+
+        # Entrys
+        lenght_mac_entry = ctk.CTkEntry(config_window, placeholder_text="Insira Largura")
+        lenght_mac_entry.place(x=20, y=20)
+
+        # Buttons
+        change_lenght_mac = ctk.CTkButton(config_window, text="Mudar Quantidade MAC", command=change_lenght_macs)
+        change_lenght_mac.place(x=20, y=60)
+
+        # Label
+        lenght_mac_label = ctk.CTkLabel(config_window, textvariable=lenght_mac_response)
+        lenght_mac_label.place(x=100, y=100)
+
+        config_window.protocol("WM_DELETE_WINDOW", close_config_window)
+        config_window.mainloop()
+    else:
+        config_window.lift()
+
+# MAIN WINDOW
 def close_window():
     global main_window
     main_window.destroy()
     main_window = None 
-    os._exit(0)
-
-def open_last_mac_file():
-    # A small fix to get path, the function get_path() return 2 var, but we only need one of these vars, so whe dump the other
-    dump_macs, path = get_path()
-    # Open the last txt mac file
-    os.startfile(path)
+    os._exit(0)  
 
 # Function that write the 10 macs on a frame in the main window
 def write_10_macs(mac_frame, mac_label, lenght_mac):
@@ -119,8 +177,8 @@ def write_10_macs(mac_frame, mac_label, lenght_mac):
     if len(macs) >= 10:
         # Write the last MAC
         labels[9].configure(text="10 - " + macs[9])
-        check_max_response = check_max_macs(mac_frame, mac_label, lenght_mac)
-        if check_max_response == False:
+        #check_max_response = check_max_macs(mac_frame, mac_label, lenght_mac)
+        if check_max_macs(mac_frame, mac_label, lenght_mac) == False:
             # Change the frame color to green 
             mac_frame.configure(fg_color="#1A5E00")
             # Writes "CAIXA FINALIZADA"  
@@ -144,7 +202,7 @@ def write_10_macs(mac_frame, mac_label, lenght_mac):
         return macs
 
 def check_max_macs(mac_frame, mac_label, lenght_mac):
-    if mac_quantity() >= int(lenght_mac):
+    if get_mac_quantity() >= int(lenght_mac):
             mac_label.set("Pallet Finalizado")
             mac_frame.configure(fg_color="#1BC900")
             sleep(2)
@@ -157,7 +215,7 @@ def check_max_macs(mac_frame, mac_label, lenght_mac):
 # Function to check the total of boxes
 def check_boxes():
     # Get all the macs written
-    all_mac = mac_quantity()
+    all_mac = get_mac_quantity()
     # Return the number of boxes doing a integer division of all the macs by the number of products in each box (10)
     return int(all_mac) // 10
 
@@ -174,18 +232,20 @@ async def search_mac(mac_entry, mac_label, boxes_number, products_number, is_fir
             # A quick fix for mac reading problem when has no input
             while mac_entry.get() == "":
                 await asyncio.sleep(0.2)
-            await asyncio.sleep(0.5)
+            await asyncio.sleep(0.2)
             # Get the mac entry
             mac = mac_entry.get()
             # Checks if mac entry have some text
             if mac:
+                if not mac_label.get() == "":
+                    clean_message(mac_label)
                 # Tries to save the mac on the txt mac file
                 response = save_mac(mac.strip(), is_first_mac)
                 # Ckecks if the MAC was written and returned "OK"
-                if response == "MAC ASSOCIADO!":
+                if response == "MAC Associado":
                     is_first_mac = False
                     # Update the number of products
-                    products_number.set(mac_quantity())
+                    products_number.set(get_mac_quantity())
                     # Update the number of boxes
                     boxes_number.set(check_boxes())
                     # Add the mac to the frame and to the last 10 macs file
@@ -213,7 +273,6 @@ async def search_mac(mac_entry, mac_label, boxes_number, products_number, is_fir
                 await asyncio.sleep(0.2)
         except Exception as e:
             print("Error Search Mac: ", e)
-            #loop.stop()
             break
 
 # Function to start the async function search_mac
