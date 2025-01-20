@@ -4,14 +4,19 @@ import asyncio
 import threading
 
 window_customize = None
+workers = []
 
 def close_customize_window():
     global window_customize
+    entries.clear()
+    status_labels.clear()
+    fw_labels.clear()
+    client_labels.clear()
+    window_customize.quit()
     window_customize.destroy()
     window_customize = None
 
 def open_window_customize(async_loop):
-    
     from config.config_customize import open_new_window
     global window_customize
     if window_customize is None or not window_customize.winfo_exists():
@@ -28,19 +33,6 @@ def open_window_customize(async_loop):
         container = ctk.CTkFrame(window_customize, fg_color="#433A3A")
         container.pack(pady=20)
         
-        for i in range(10):
-            card, entry, status_label, fw_label, client_label = create_card(container, f"Produto {i+1}", "MAC", "Desconhecido", "1.25.5", "Desconhecido")
-            entries.append(entry)
-            status_labels.append(status_label)
-            fw_labels.append(fw_label)
-            client_labels.append(client_label)
-            row, col = divmod(i, 5)
-            card.grid(row=row, column=col, padx=10, pady=10)
-            
-            # Iniciar o loop assíncrono em uma thread separada para cada MAC
-            next_entry = entries[i + 1] if i < len(entries) - 1 else None
-            threading.Thread(target=start_async_loop, args=(entry, status_label, fw_label, client_label, next_entry)).start()
-
         button_frame = ctk.CTkFrame(window_customize, fg_color="#433A3A")
         button_frame.pack(pady=10)
 
@@ -52,38 +44,56 @@ def open_window_customize(async_loop):
         buttonClear = ctk.CTkButton(button_frame, text="Limpar Campos", command=clear_entries)
         buttonClear.pack(side="left", padx=10)
 
+        for i in range(10):
+            card = ctk.CTkFrame(container, width=150, height=250, fg_color="#009DB8", corner_radius=15)
+            row, col = divmod(i, 5)
+            card.grid(row=row, column=col, padx=10, pady=10)
+                
+            title_label = ctk.CTkLabel(card, text=f"Produto {i+1}", font=("Arial", 12), width=150, height=30, fg_color="#433A3A", corner_radius=15)
+            title_label.pack(pady=12, padx=10)
+            
+            # Entradas de dados
+            mac_entry = ctk.CTkEntry(card, placeholder_text="MAC")
+            mac_entry.pack(pady=5)
+            
+            status_label = ctk.CTkLabel(card, text=f"Sem mac\nDesconhecido", font=("Arial", 12), text_color="black", justify="center")
+            status_label.pack(pady=5)
+            
+            fw_label = ctk.CTkLabel(card, text=f"Versão de FW:\n1.25.5", font=("Arial", 12), text_color="black", justify="center")
+            fw_label.pack(pady=5)
+
+            client_label = ctk.CTkLabel(card, text=f"Cliente\nDesconhecido", font=("Arial", 12), text_color="black", justify="center")
+            client_label.pack(pady=5)
+
+            entries.append(mac_entry)
+            status_labels.append(status_label)
+            fw_labels.append(fw_label)
+            client_labels.append(client_label)
+
+            next_entry = entries[i + 1] if i < len(entries) - 1 else None
+
+            p = threading.Thread(target=start_async_loop, args=(mac_entry, status_label, fw_label, client_label, next_entry))
+            workers.append(p)
+            p.start()
+         
         window_customize.protocol("WM_DELETE_WINDOW", close_customize_window)
         window_customize.mainloop()
     else:
         window_customize.lift()
 
-# Função para criar um card individual com entrada de dados
-def create_card(parent, title, mac, status, fw_version, client):
-    card = ctk.CTkFrame(parent, width=150, height=250, fg_color="#009DB8", corner_radius=15)
-    
-    title_label = ctk.CTkLabel(card, text=title, font=("Arial", 12), width=150, height=30, fg_color="#433A3A", corner_radius=15)
-    title_label.pack(pady=12, padx=10)
-    
-    # Entradas de dados
-    mac_entry = ctk.CTkEntry(card, placeholder_text=mac)
-    mac_entry.pack(pady=5)
-    
-    status_label = ctk.CTkLabel(card, text=f"Sem mac\n{status}", font=("Arial", 12), text_color="black", justify="center")
-    status_label.pack(pady=5)
-    
-    fw_label = ctk.CTkLabel(card, text=f"Versão de FW\n{fw_version}", font=("Arial", 12), text_color="black", justify="center")
-    fw_label.pack(pady=5)
-
-    client_label = ctk.CTkLabel(card, text=f"Cliente\n{client}", font=("Arial", 12), text_color="black", justify="center")
-    client_label.pack(pady=5)
-
-    return card, mac_entry, status_label, fw_label, client_label
-
 # Função assíncrona para fazer a consulta e atualizar o status, versão e cliente
 async def update_status_async(entry, status_label, fw_label, client_label, next_entry=None):
     from scripts.consult import consulta_mac
+    all_read = False
     while True:
         try:
+            while entry.get() == "" or all_read == True:
+                if entry.get() == "" and all_read == True:
+                    all_read = False
+                    break
+                if len(entry.get()) != 12:
+                    break
+                await asyncio.sleep(0.2)
             mac = entry.get().lower()
             if len(mac) == 12:  # Verifica se o MAC tem exatamente 12 caracteres
                 result = consulta_mac(mac)  # Chame a função de consulta do seu script Python
@@ -100,6 +110,7 @@ async def update_status_async(entry, status_label, fw_label, client_label, next_
 
                     fw_label.configure(text=f"Versão de FW\n{fw_version}",  text_color="white")  # Atualiza a versão de firmware
                     client_label.configure(text=f"Cliente\n{client}",  text_color="white")  # Atualiza o cliente
+                    all_read = True
                 else:
                     status_label.configure(text="MAC não encontrado", text_color="red")
                     fw_label.configure(text="Versão de FW\nDesconhecida", text_color="black")
