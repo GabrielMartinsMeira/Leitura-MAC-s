@@ -107,6 +107,8 @@ def main(async_loop):
         write_10_macs(mac_frame, mac_label, lenght_mac)
         # Writes the number of products already made
         products_number.set(get_mac_quantity())
+
+    main_window.after(100, open_config_window)
     # Start the thread to the async loop and pass all vars
     threading.Thread(target=start_async_loop, args=[mac_entry, mac_label, boxes_number, products_number, is_first_mac, mac_frame]).start()
     main_window.protocol("WM_DELETE_WINDOW", close_window)
@@ -133,9 +135,10 @@ def open_config_window():
         ctk.set_appearance_mode("dark")
         ctk.set_default_color_theme("blue")
         config_window.title("Configurações")
-        config_window.geometry("600x400") 
+        config_window.geometry("400x200") 
         config_window.configure(fg_color='#433A3A')
         config_window.resizable(False, False)
+        config_window.attributes('-topmost', True)
 
         # String Var
         lenght_mac_response = ctk.StringVar()
@@ -149,6 +152,7 @@ def open_config_window():
                     with open(os.path.join(MAINPATH, "config", "saved_configs.txt"), "w") as writer_config_file:
                         lenght_mac = lenght_mac_entry.get()
                         writer_config_file.write("TOTAL_MACS:" + lenght_mac + "\nUSER:" + username + "\nPASS:" + password)
+                    close_config_window()
                 else:
                     lenght_mac_response.set("Escreva um número")
             except Exception as e:
@@ -156,19 +160,22 @@ def open_config_window():
                 print("Error ", e)
 
         # Entrys
-        lenght_mac_entry = ctk.CTkEntry(config_window, placeholder_text="Insira Largura")
-        lenght_mac_entry.place(x=20, y=20)
+        lenght_mac_entry = ctk.CTkEntry(config_window, placeholder_text="Insira Quantidade")
+        lenght_mac_entry.place(x=130, y=60)
 
         # Buttons
-        change_lenght_mac = ctk.CTkButton(config_window, text="Mudar Quantidade MAC", command=change_lenght_macs)
-        change_lenght_mac.place(x=20, y=60)
+        change_lenght_mac = ctk.CTkButton(config_window, text="Aplicar mudança", command=change_lenght_macs)
+        change_lenght_mac.place(x=130, y=100)
 
         # Label
+        mac_label = ctk.CTkLabel(config_window, text="INSIRA A QUANTIDADE DE PRODUTOS A SEREM LIDOS", font=("Roboto", 16))
+        mac_label.place(x=5, y=10)
+
+
         lenght_mac_label = ctk.CTkLabel(config_window, textvariable=lenght_mac_response)
-        lenght_mac_label.place(x=100, y=100)
+        lenght_mac_label.place(x=150, y=140)
 
         config_window.protocol("WM_DELETE_WINDOW", close_config_window)
-        config_window.mainloop()
     else:
         config_window.lift()
 
