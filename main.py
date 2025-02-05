@@ -142,6 +142,9 @@ def open_config_window():
 
         # String Var
         lenght_mac_response = ctk.StringVar()
+        current_mac_var = ctk.StringVar()
+        
+        current_mac_var.set(get_lenght_mac())
 
         # Function to set the lenght written by the user,
         def change_lenght_macs():
@@ -152,7 +155,7 @@ def open_config_window():
                     with open(os.path.join(MAINPATH, "config", "saved_configs.txt"), "w") as writer_config_file:
                         lenght_mac = lenght_mac_entry.get()
                         writer_config_file.write("TOTAL_MACS:" + lenght_mac + "\nUSER:" + username + "\nPASS:" + password)
-                    close_config_window()
+                    current_mac_var.set(get_lenght_mac())
                 else:
                     lenght_mac_response.set("Escreva um número")
             except Exception as e:
@@ -171,9 +174,14 @@ def open_config_window():
         mac_label = ctk.CTkLabel(config_window, text="INSIRA A QUANTIDADE DE PRODUTOS A SEREM LIDOS", font=("Roboto", 16))
         mac_label.place(x=5, y=10)
 
+        current_mac_label = ctk.CTkLabel(config_window, text="Quantidade atual de MAC's:", font=("Roboto", 12))
+        current_mac_label.place(x=5, y=160)
 
         lenght_mac_label = ctk.CTkLabel(config_window, textvariable=lenght_mac_response)
-        lenght_mac_label.place(x=150, y=140)
+        lenght_mac_label.place(x=150, y=130)
+
+        current_mac = ctk.CTkLabel(config_window, textvariable=current_mac_var)
+        current_mac.place(x=160, y=160)
 
         config_window.protocol("WM_DELETE_WINDOW", close_config_window)
     else:
