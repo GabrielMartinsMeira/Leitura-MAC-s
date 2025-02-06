@@ -227,9 +227,11 @@ def write_10_macs(mac_frame, mac_label, lenght_mac):
         return macs
 
 def check_max_macs(mac_frame, mac_label, lenght_mac):
+    from scripts.convert_csv import convert_mac
     if get_mac_quantity() >= int(lenght_mac):
             mac_label.set("Pallet Finalizado")
             mac_frame.configure(fg_color="#1BC900")
+            convert_mac()
             sleep(2)
             clean_message(mac_label)
             mac_frame.configure(fg_color="#003F58")

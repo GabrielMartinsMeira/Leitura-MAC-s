@@ -18,8 +18,6 @@ def save_mac(mac, is_first_mac):
             # Check if the new MAC isn't in the last txt mac file 
             if not mac in items:
                 if len(items) >= int(lenght_mac):
-                    from scripts.convert_csv import convert_mac
-                    convert_mac()
                     new_mac_file()
                     path = get_path()
                     items = get_macs()
