@@ -19,6 +19,7 @@ labels = []
 box_icon = ctk.CTkImage(Image.open(os.path.join(MAINPATH, "images", "box_icon.png")), size=(35, 35))
 router_icon = ctk.CTkImage(Image.open(os.path.join(MAINPATH, "images", "router_icon.png")), size=(35, 35))
 config_icon = ctk.CTkImage(Image.open(os.path.join(MAINPATH, "images", "engrenagem_icon.png")), size=(35, 35))
+eye_icon = ctk.CTkImage(Image.open(os.path.join(MAINPATH, "images", "eye_icon.png")), size=(35, 35))
 
 # The main function
 def main(async_loop):
@@ -79,8 +80,11 @@ def main(async_loop):
     open_last_txt = ctk.CTkButton(main_window, text="ABRIR ARQUIVO MACS", command=open_last_mac_file)
     open_last_txt.place(x=210, y=460)
     
-    open_config = ctk.CTkButton(main_window, text="", image=config_icon, height=10, width=20, border_width=0, fg_color="#433A3A", bg_color="#433A3A", command=open_config_window_test)
+    open_config = ctk.CTkButton(main_window, text="", image=config_icon, height=10, width=20, border_width=0, fg_color="#433A3A", bg_color="#433A3A", command=open_config_window)
     open_config.place(x=0, y=460)
+
+    open_customize = ctk.CTkButton(main_window, text="", image=eye_icon, height=10, width=20, border_width=0, fg_color="#433A3A", bg_color="#433A3A", command=open_window_customize)
+    open_customize.place(x=55, y=460)
 
     # Program Init
     # Create the labels on the frame for the last 10 macs
@@ -103,19 +107,27 @@ def main(async_loop):
         write_10_macs(mac_frame, mac_label, lenght_mac)
         # Writes the number of products already made
         products_number.set(get_mac_quantity())
+
+    main_window.after(100, open_config_window)
     # Start the thread to the async loop and pass all vars
     threading.Thread(target=start_async_loop, args=[mac_entry, mac_label, boxes_number, products_number, is_first_mac, mac_frame]).start()
     main_window.protocol("WM_DELETE_WINDOW", close_window)
     main_window.mainloop()
 
 # Functions
+# CUSTOMIZE WINDOW
+def open_window_customize():
+    from see_customization import open_window_customize
+    loop = asyncio.get_event_loop()
+    open_window_customize(loop)
+
 # CONFIG WINDOW
 def close_config_window():
     global config_window
     config_window.destroy()
     config_window = None
 
-def open_config_window_test():
+def open_config_window():
     global config_window
     if config_window is None or not config_window.winfo_exists():
         config_window = ctk.CTkToplevel(main_window)
@@ -123,12 +135,16 @@ def open_config_window_test():
         ctk.set_appearance_mode("dark")
         ctk.set_default_color_theme("blue")
         config_window.title("Configurações")
-        config_window.geometry("600x400") 
+        config_window.geometry("400x200") 
         config_window.configure(fg_color='#433A3A')
         config_window.resizable(False, False)
+        config_window.attributes('-topmost', True)
 
         # String Var
         lenght_mac_response = ctk.StringVar()
+        current_mac_var = ctk.StringVar()
+        
+        current_mac_var.set(get_lenght_mac())
 
         # Function to set the lenght written by the user,
         def change_lenght_macs():
@@ -139,6 +155,7 @@ def open_config_window_test():
                     with open(os.path.join(MAINPATH, "config", "saved_configs.txt"), "w") as writer_config_file:
                         lenght_mac = lenght_mac_entry.get()
                         writer_config_file.write("TOTAL_MACS:" + lenght_mac + "\nUSER:" + username + "\nPASS:" + password)
+                    current_mac_var.set(get_lenght_mac())
                 else:
                     lenght_mac_response.set("Escreva um número")
             except Exception as e:
@@ -146,19 +163,27 @@ def open_config_window_test():
                 print("Error ", e)
 
         # Entrys
-        lenght_mac_entry = ctk.CTkEntry(config_window, placeholder_text="Insira Largura")
-        lenght_mac_entry.place(x=20, y=20)
+        lenght_mac_entry = ctk.CTkEntry(config_window, placeholder_text="Insira Quantidade")
+        lenght_mac_entry.place(x=130, y=60)
 
         # Buttons
-        change_lenght_mac = ctk.CTkButton(config_window, text="Mudar Quantidade MAC", command=change_lenght_macs)
-        change_lenght_mac.place(x=20, y=60)
+        change_lenght_mac = ctk.CTkButton(config_window, text="Aplicar mudança", command=change_lenght_macs)
+        change_lenght_mac.place(x=130, y=100)
 
         # Label
+        mac_label = ctk.CTkLabel(config_window, text="INSIRA A QUANTIDADE DE PRODUTOS A SEREM LIDOS", font=("Roboto", 16))
+        mac_label.place(x=5, y=10)
+
+        current_mac_label = ctk.CTkLabel(config_window, text="Quantidade atual de MAC's:", font=("Roboto", 12))
+        current_mac_label.place(x=5, y=160)
+
         lenght_mac_label = ctk.CTkLabel(config_window, textvariable=lenght_mac_response)
-        lenght_mac_label.place(x=100, y=100)
+        lenght_mac_label.place(x=150, y=130)
+
+        current_mac = ctk.CTkLabel(config_window, textvariable=current_mac_var)
+        current_mac.place(x=160, y=160)
 
         config_window.protocol("WM_DELETE_WINDOW", close_config_window)
-        config_window.mainloop()
     else:
         config_window.lift()
 

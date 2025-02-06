@@ -90,7 +90,9 @@ def get_path():
         with open(os.path.join(MAINPATH, "macs", "last_mac_file.txt"), "r") as reader_mac_file:
             if not reader_mac_file.read(1):
                 return "Não há arquivos para abrir"
+            
             reader_mac_file.seek(0)
+    
             last_mac_file = reader_mac_file.read()
             return os.path.join(MAINPATH, "macs", last_mac_file)
         
