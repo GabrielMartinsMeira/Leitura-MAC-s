@@ -84,16 +84,17 @@ def open_window_customize(async_loop):
 # Função assíncrona para fazer a consulta e atualizar o status, versão e cliente
 async def update_status_async(entry, status_label, fw_label, client_label, next_entry=None):
     from scripts.consult import consulta_mac
-    all_read = False
+    already_read = False
     while True:
         try:
-            while entry.get() == "" or all_read == True:
-                if entry.get() == "" and all_read == True:
-                    all_read = False
+            while entry.get() == "" or already_read == True:
+                # When clear the labels will fall here
+                if entry.get() == "" and already_read == True:
+                    already_read = False
                     break
-                if len(entry.get()) != 12:
+                if len(entry.get()) != 12 and entry.get() != "":
                     break
-                await asyncio.sleep(0.2)
+                await asyncio.sleep(0.5)
             mac = entry.get().lower()
             if len(mac) == 12:  # Verifica se o MAC tem exatamente 12 caracteres
                 result = consulta_mac(mac)  # Chame a função de consulta do seu script Python
@@ -110,7 +111,7 @@ async def update_status_async(entry, status_label, fw_label, client_label, next_
 
                     fw_label.configure(text=f"Versão de FW\n{fw_version}",  text_color="white")  # Atualiza a versão de firmware
                     client_label.configure(text=f"Cliente\n{client}",  text_color="white")  # Atualiza o cliente
-                    all_read = True
+                    already_read = True
                 else:
                     status_label.configure(text="MAC não encontrado", text_color="red")
                     fw_label.configure(text="Versão de FW\nDesconhecida", text_color="black")
@@ -118,17 +119,16 @@ async def update_status_async(entry, status_label, fw_label, client_label, next_
                 # Simula o 'tab' para mover para o próximo campo
                 if next_entry:
                     next_entry.event_generate("<Tab>")
-            elif len(mac) > 12:
+            elif len(mac) != 12 and entry.get() != "":
                 # Limpa o campo e mostra mensagem de erro
                 entry.delete(0, ctk.END)
-                status_label.configure(text="Erro: MAC muito longo", text_color="red")
+                status_label.configure(text="Erro: MAC incorreto", text_color="red")
                 fw_label.configure(text="Versão de FW\nErro")
                 client_label.configure(text="Cliente\nErro")
             else:
                 status_label.configure(text="Sem mac", text_color="blue")
                 fw_label.configure(text="Versão de FW\nDesconhecida", text_color="black")
                 client_label.configure(text="Cliente\nDesconhecido", text_color="black")
-            await asyncio.sleep(0.5)  # Aguarde 1 segundo antes da próxima consulta
         except Exception as e:
             print("Error ", e)
             break
