@@ -1,7 +1,9 @@
 # Leitura-MAC-s
+
 Software dedicado a customização de produtos, capaz de realizar a leitura de MAC's e acompanhamento de informções de customização via request com token.
 
 # 📋 Pré-requisitos
+
 Use o instalador de pacotes pip para instalar as bibliotecas presentes no arquivo [requeriments.txt](https://github.com/GabrielMartinsMeira/Software_Customizado/blob/main/requirements.txt), conforme exemplo abaixo:
 
 **pip install _example_**
@@ -22,3 +24,7 @@ Por fim em **scripts/convert_csv.py**, na função **send_mac_server**, deve ser
 Obs: O script para recebimento do arquivo .csv pode ser encontrado no repositório [Mac_File_Receiver](https://github.com/GabrielMartinsMeira/Mac_File_Receiver/)
 
 # Complilação
+
+Para compilar o código pós alteração utilize o **pyinstaller**, caso não o tenha instale-o com o pip conforme já exemplificado. Abaixo o comando para a compilação do programa
+
+**pyinstaller --onefile --noconsole main.py**
