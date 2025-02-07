@@ -17,4 +17,6 @@ Em "config/token.txt" deve-se colocar o token de acesso ao link já inserido.
 Por fim em **scripts/convert_csv.py**, na função **send_mac_server**, deve ser colocado o endereço IP do host a receber o arquivo .csv
 ![example 2](https://github.com/user-attachments/assets/31315af8-73ae-4640-8675-19e55ac2df86)
 
+Obs: O script para recebimento do arquivo .csv pode ser encontrado no repositório (Mac_File_Receiver)[https://github.com/GabrielMartinsMeira/Mac_File_Receiver/]
+
 # Complilação
