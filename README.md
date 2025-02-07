@@ -8,7 +8,7 @@ Use o instalador de pacotes pip para instalar as bibliotecas presentes no arquiv
 
 **pip install _example_**
 
-# Configuração
+# ⚙️ Configuração
 Será necessário inserir informações em partes do código para a execução do software.
 
 Em **scripts/consult.py**, na função **consulta_mac**, deve-se inserir o link da API que retornara a informação de customização.
@@ -27,4 +27,15 @@ Obs: O script para recebimento do arquivo .csv pode ser encontrado no repositór
 
 Para compilar o código pós alteração utilize o **pyinstaller**, caso não o tenha instale-o com o pip conforme já exemplificado. Abaixo o comando para a compilação do programa
 
-**pyinstaller --onefile --noconsole main.py**
+**pyinstaller --onefile --noconsole _main.py_**
+
+Obs::Caso queira debugar o programa já compilado basta tirar **--noconsole** do comando.
+
+Ao compilar basta tirar o executavel da past dist e colocar na raiz do programa.
+
+![example 3](https://github.com/user-attachments/assets/1d806378-28a8-402a-9677-34562677d26e)
+
+Por fim, basta excluir a pasta dist e rodar o programa.
+
+![example 4](https://github.com/user-attachments/assets/5e164079-984e-4b47-9867-c00a2c6e9043)
+
