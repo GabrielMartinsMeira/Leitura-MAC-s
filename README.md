@@ -29,7 +29,7 @@ Para compilar o código pós alteração utilize o **pyinstaller**, caso não o 
 
 **pyinstaller --onefile --noconsole _main.py_**
 
-Obs::Caso queira debugar o programa já compilado basta tirar **--noconsole** do comando.
+Obs: Caso queira debugar o programa já compilado, basta tirar **--noconsole** do comando.
 
 Ao compilar basta tirar o executavel da past dist e colocar na raiz do programa.
 
