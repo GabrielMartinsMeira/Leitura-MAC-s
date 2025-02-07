@@ -2,7 +2,7 @@
 Software dedicado a customização de produtos, capaz de realizar a leitura de MAC's e acompanhamento de informções de customização via request com token.
 
 # 📋 Pré-requisitos
-Use o instalador de pacotes pip para instalar as bibliotecas presentes no arquivo <a href="https://github.com/GabrielMartinsMeira/Software_Customizado/blob/main/">requirements.txt</a> conforme exemplo abaixo:
+Use o instalador de pacotes pip para instalar as bibliotecas presentes no arquivo [requeriments.txt](https://github.com/GabrielMartinsMeira/Software_Customizado/blob/main/requirements.txt) conforme exemplo abaixo:
 pip install example
 
 # Configuração
